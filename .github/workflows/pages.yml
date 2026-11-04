@@ -1,0 +1,50 @@
+name: Deploy game preview
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Validate and package the Vite build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/configure-pages@v5
+      - name: Verify public artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f site/index.html
+          test -f site/lesson01/index.html
+          test -n "$(find site/assets -maxdepth 1 -type f -name '*.js' -print -quit)"
+          test -n "$(find site/assets -maxdepth 1 -type f -name '*.css' -print -quit)"
+          grep -q '/hoyeon-codeworld-preview/assets/' site/index.html
+          unexpected=$(find site -type f | grep -Ev '^site/(index\.html|lesson01/index\.html|assets/index-[A-Za-z0-9_-]+\.(js|css))$' || true)
+          test -z "$unexpected"
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/deploy-pages@v4
+        id: deployment
