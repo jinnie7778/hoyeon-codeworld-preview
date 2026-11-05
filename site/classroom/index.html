@@ -4,14 +4,14 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>호연 코드월드 · 수업 로그인</title>
-    <script type="module" crossorigin src="/hoyeon-codeworld-preview/assets/classroom-BFg8khjO.js"></script>
+    <script type="module" crossorigin src="/hoyeon-codeworld-preview/assets/classroom-f6xX69wI.js"></script>
     <link rel="modulepreload" crossorigin href="/hoyeon-codeworld-preview/assets/balance-9Cijtkbz.js">
     <link rel="stylesheet" crossorigin href="/hoyeon-codeworld-preview/assets/classroom-C37pgaho.css">
   </head>
   <body>
     <main>
       <h1>호연 코드월드 수업 로그인</h1>
-      <p class="account-intro">처음이라면 직접 등록하세요. 이미 등록했다면 같은 접속 코드로 학습 기록을 이어갈 수 있어요.</p>
+      <p class="account-intro">처음이라면 학급·이름과 비밀번호로 등록하세요. 기존 학생은 같은 계정으로 학습 기록을 이어갑니다.</p>
       <nav id="account-tabs" aria-label="학생 계정">
         <button id="show-login" type="button" aria-pressed="true">기존 학생 로그인</button>
         <button id="show-register" type="button" aria-pressed="false">처음 왔어요 · 학생 등록</button>
@@ -19,22 +19,17 @@
       <form id="student-login">
         <label>학급 <select name="classId" required></select></label>
         <label>이름 <input name="realName" maxlength="80" required /></label>
-        <label>개인 접속 코드 <input name="code" type="password" autocomplete="off" maxlength="65" required /></label>
+        <label>비밀번호 <input name="code" type="password" autocomplete="current-password" maxlength="128" required /></label>
+        <p class="muted">기존 접속 코드 계정은 이 칸에 원래 코드를 입력해 로그인하세요. 비밀번호를 잊었다면 다시 등록하지 말고 선생님에게 문의하세요.</p>
         <button type="submit">로그인</button>
       </form>
       <form id="student-register" hidden>
         <h2>새 학생 등록</h2>
         <label>학급 <select name="classId" required></select></label>
         <label>이름 <input name="realName" maxlength="80" autocomplete="off" required /></label>
-        <p>접속 코드는 이 화면에서 바로 만들어요. 다음 로그인에 꼭 필요하니 개인적으로 안전하게 보관해 주세요. 다른 사람에게 알려 주지 마세요.</p>
-        <label>내 개인 접속 코드 <input name="code" type="password" readonly autocomplete="off" spellcheck="false" aria-describedby="code-help" /></label>
-        <p id="code-help" class="muted">동명이인도 서로 다른 코드로 구분됩니다. 코드에는 비밀번호 역할을 하는 긴 무작위 값이 포함됩니다.</p>
-        <div class="code-actions">
-          <button id="generate-code" type="button">새 코드 만들기</button>
-          <button id="show-code" type="button" aria-pressed="false">코드 보기</button>
-          <button id="copy-code" type="button">코드 복사</button>
-        </div>
-        <label class="save-code"><input name="saved" type="checkbox" required /> 접속 코드를 안전한 곳에 보관했습니다.</label>
+        <label>비밀번호 <input name="password" type="password" autocomplete="new-password" minlength="12" maxlength="64" required /></label>
+        <label>비밀번호 확인 <input name="passwordConfirm" type="password" autocomplete="new-password" minlength="12" maxlength="64" required /></label>
+        <p class="muted">영문 등 글자와 숫자를 포함해 12자 이상으로 설정하세요(최대 72바이트). 다른 사이트의 비밀번호는 사용하지 마세요. 같은 반 동명이인 또는 이미 등록된 이름은 선생님 확인이 필요합니다.</p>
         <p class="muted">등록한 이름과 학급은 담당 교사에게 표시됩니다. 다른 학생에게는 기본 비공개이며, 수업 입장은 교사의 차시 공개 설정을 따릅니다.</p>
         <button type="submit">등록하고 게임 접속</button>
         <p id="registration-status" role="status" aria-live="polite"></p>
