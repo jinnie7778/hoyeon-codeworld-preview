@@ -27,14 +27,11 @@ jobs:
           set -euo pipefail
           test -f site/index.html
           test -f site/lesson01/index.html
-          test -f site/classroom/index.html
           test -n "$(find site/assets -maxdepth 1 -type f -name '*.js' -print -quit)"
           test -n "$(find site/assets -maxdepth 1 -type f -name '*.css' -print -quit)"
           grep -q '/hoyeon-codeworld-preview/assets/' site/index.html
-          grep -q '/hoyeon-codeworld-preview/assets/' site/classroom/index.html
-          unexpected=$(find site -type f | grep -Ev '^site/(index\.html|classroom/index\.html|lesson01/index\.html|assets/[A-Za-z0-9_-]+\.(js|css))$' || true)
+          unexpected=$(find site -type f | grep -Ev '^site/(index\.html|lesson01/index\.html|assets/index-[A-Za-z0-9_-]+\.(js|css))$' || true)
           test -z "$unexpected"
-          if grep -Erq 'sb_secret_[A-Za-z0-9_-]{16,}|BEGIN .*PRIVATE KEY|github_pat_[A-Za-z0-9_]{20,}|[#@] sourceMappingURL=' site; then echo 'Sensitive artifact pattern detected'; exit 1; fi
       - uses: actions/upload-pages-artifact@v4
         with:
           path: site

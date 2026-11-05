@@ -43,33 +43,12 @@ function expected(theme,level,values){const fields=theme.fields,rows=[theme.head
 function makeMission(theme,level){let n=levels[level].n;return {tests:theme.samples.map(s=>({inputs:s.slice(0,n),output:expected(theme,level,s)})),code:level===0?`print("${theme.heading[0]}")\n# 입력받고 결과를 완성하세요`:''}}
 const escapeHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"\"":'&quot;',"'":'&#39;'}[c]));
 let li=0,pi=0,mi=0,diff=0,hintCount={practice:0,mission:0},passed=false,busy=false;
-const classroomMode = new URLSearchParams(window.location.search).get('mode') === 'classroom';
-const memory = new Map();
-const lessonStorage = classroomMode
-  ? {getItem: key => memory.get(key) ?? null, setItem: (key, value) => memory.set(key, value)}
-  : window.localStorage;
-const requests = new Map();
-window.addEventListener('message', event => {
-  if (!classroomMode || event.origin !== location.origin || event.source !== window.parent ||
-      event.data?.source !== 'hoyeon-game') return;
-  if (event.data.type === 'state') {
-    for (let index = 0; index < 8; index++) {
-      lessonStorage.setItem('hoyeon_l1_p'+index, event.data.learning.practices.includes(index) ? '1' : '0');
-    }
-    lessonStorage.setItem('hoyeon_l1_submitted', event.data.learning.tier ? '서버 판정 완료 · '+levels[event.data.learning.tier - 1].label : '');
-    renderPracticeTabsOnly();
-    renderReview();
-  } else if (event.data.type === 'receipt' && event.data.activity === 'mission') {
-    $('submitStatus').textContent = event.data.error || '서버에 저장했습니다. 채점 결과를 기다려 주세요.';
-    if (event.data.error && verifiedMission?.request === event.data.request && passed) $('submit').disabled = false;
-  }
-});
-let saved={};try{saved=JSON.parse(lessonStorage.getItem('hoyeon_l1_v3_drafts')||'{}')}catch{}
-function save(){try{lessonStorage.setItem('hoyeon_l1_v3_drafts',JSON.stringify(saved))}catch{}}
+let saved={};try{saved=JSON.parse(localStorage.getItem('hoyeon_l1_v3_drafts')||'{}')}catch{}
+function save(){try{localStorage.setItem('hoyeon_l1_v3_drafts',JSON.stringify(saved))}catch{}}
 function go(page){document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===page));document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===page));if(page==='review')renderReview();window.scrollTo(0,0)}
 document.querySelectorAll('nav button').forEach(x=>x.onclick=()=>go(x.dataset.page));
 function renderLesson(){$('lessonTabs').innerHTML=lessons.map((l,i)=>`<button class="${i===li?'sel':''}" onclick="li=${i};renderLesson()">${i+1}. ${l.title}</button>`).join('');let l=lessons[li];$('lessonText').innerHTML=`<p>${l.desc}</p><div class="box"><b>기억하세요</b><p>${l.tip}</p></div>`;$('learnCode').value=saved['l'+li]??l.code;clearOutput('learn')}
-function renderPractice(){$('practiceTabs').innerHTML=practices.map((p,i)=>`<button class="${i===pi?'sel':''}" onclick="pi=${i};renderPractice()">${i+1}번${lessonStorage.getItem('hoyeon_l1_p'+i)==='1'?' ✓':''}</button>`).join('');let p=practices[pi];$('practiceText').innerHTML=`<b>${p.title}</b><p>${p.desc}</p>`;$('practiceCode').value=saved['p'+pi]??p.code;clearOutput('practice');$('practiceHint').style.display='none';$('practiceFeedback').style.display='none';hintCount.practice=0}
+function renderPractice(){$('practiceTabs').innerHTML=practices.map((p,i)=>`<button class="${i===pi?'sel':''}" onclick="pi=${i};renderPractice()">${i+1}번${localStorage.getItem('hoyeon_l1_p'+i)==='1'?' ✓':''}</button>`).join('');let p=practices[pi];$('practiceText').innerHTML=`<b>${p.title}</b><p>${p.desc}</p>`;$('practiceCode').value=saved['p'+pi]??p.code;clearOutput('practice');$('practiceHint').style.display='none';$('practiceFeedback').style.display='none';hintCount.practice=0}
 function renderMission(){const t=missionThemes[mi],lv=levels[diff],m=makeMission(t,diff);$('missionChoices').innerHTML=missionThemes.map((m,i)=>`<div class="choice ${mi===i?'sel':''}" onclick="mi=${i};passed=false;renderMission()"><b>${m.title}</b><br><small>${m.fields[0][0]} 등을 입력받아 결과물을 만드는 프로그램</small></div>`).join('');$('difficultyTabs').innerHTML=levels.map((x,i)=>`<button class="${diff===i?'sel':''}" onclick="diff=${i};passed=false;renderMission()">${x.label}</button>`).join('');$('missionText').innerHTML=`<b>${t.title} · ${lv.label}</b><p>${lv.description}</p><p>입력 ${lv.n}개를 받고, 아래 <b>완성 프로그램 실행 예시</b>와 같은 순서와 형식으로 출력하세요.</p>`;const ex=m.tests[0];let rows=t.fields.slice(0,lv.n).map((f,i)=>`<div><span class="prompt">${escapeHtml(f[1])}</span><span class="typed">${escapeHtml(ex.inputs[i])}</span></div>`).join('');$('targetExample').innerHTML=`<div class="target"><h3>완성 프로그램 실행 예시</h3><div class="terminal">${rows}<div style="height:8px"></div>${escapeHtml(ex.output)}</div><p class="note">파란색은 사용자가 입력한 값입니다. 아래 출력 형식까지 구현하세요.</p></div>`;$('missionCode').value=saved[`m${mi}_${diff}`]??m.code;clearOutput('mission');$('missionHint').style.display='none';$('missionFeedback').style.display='none';hintCount.mission=0;passed=false;$('submit').disabled=true;$('submitStatus').textContent=''}
 function clearOutput(area){$(area+'Output').innerHTML='<span class="note">코드를 실행하면 여기에 표시됩니다.</span>'}
 function store(area){let key=area==='learn'?'l'+li:area==='practice'?'p'+pi:`m${mi}_${diff}`;saved[key]=$(area+'Code').value;save();if(area==='mission'){passed=false;$('submit').disabled=true;$('missionFeedback').style.display='none'}}
@@ -78,7 +57,7 @@ function resetArea(area){let code=area==='learn'?lessons[li].code:area==='practi
 function showHint(area){let hints=area==='practice'?practices[pi].hint:['출력 예시에서 필요한 input()의 개수와 출력 줄 수를 세어 보세요.','입력값을 각각 다른 이름에 담고, print()로 예시와 같은 순서로 출력해 보세요.','입력받은 값을 문자열과 함께 출력할 때는 쉼표 또는 문자열 +를 활용하세요.'];let i=Math.min(hintCount[area],hints.length-1);$(area+'Hint').style.display='block';$(area+'Hint').textContent=`도움말 ${i+1}: ${hints[i]}`;hintCount[area]++}
 function openGuide(){$('guideText').innerHTML=lessons.map((l,i)=>`<h3>${i+1}. ${l.title}</h3><p>${l.desc}</p><div class="code">${escapeHtml(l.code)}</div><p class="note">${l.tip}</p>`).join('');$('guideModal').classList.add('show')}
 function closeGuide(){$('guideModal').classList.remove('show')}
-function renderReview(){$('reviewText').innerHTML=`<p>연습 완료: ${practices.filter((_,i)=>lessonStorage.getItem('hoyeon_l1_p'+i)==='1').length}/8</p><p>최종 임무: ${escapeHtml(lessonStorage.getItem('hoyeon_l1_submitted')||'아직 제출하지 않았어요.')}</p>`}
+function renderReview(){$('reviewText').innerHTML=`<p>연습 완료: ${practices.filter((_,i)=>localStorage.getItem('hoyeon_l1_p'+i)==='1').length}/8</p><p>최종 임무: ${escapeHtml(localStorage.getItem('hoyeon_l1_submitted')||'아직 제출하지 않았어요.')}</p>`}
 const workerCode="let py;\nasync function init(){if(py)return;importScripts('https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js');py=await loadPyodide()}\nself.onmessage=async e=>{\ntry{\n await init();\n const events=[];\n py.setStdout({batched:s=>events.push({type:'output',text:s+'\\n'})});\n py.setStderr({batched:s=>events.push({type:'output',text:s+'\\n'})});\n let vals=[...e.data.inputs],index=0;\n py.globals.set('_lesson_take_input', (prompt)=>{\n  if(index>=vals.length)throw Error('EOFError: 입력값이 부족합니다.');\n  const value=String(vals[index++]);events.push({type:'input',prompt:String(prompt),value});return value;\n });\n await py.runPythonAsync(`import builtins\ndef _lesson_input(prompt=''):\n    return _lesson_take_input(str(prompt))\nbuiltins.input = _lesson_input\n`+'\\n'+e.data.code);\n self.postMessage({ok:true,events,output:events.filter(x=>x.type==='output').map(x=>x.text).join('').trimEnd()});\n}catch(err){self.postMessage({ok:false,error:String(err).slice(0,1500)})}\n};";
 function execute(code,inputs,timeout=22000){return new Promise(resolve=>{let url=URL.createObjectURL(new Blob([workerCode],{type:'text/javascript'})),w=new Worker(url);URL.revokeObjectURL(url);let done=false,timer=setTimeout(()=>finish({ok:false,error:'실행 시간이 초과되었습니다. 반복 실행 여부를 확인하세요.'}),timeout);function finish(r){if(done)return;done=true;clearTimeout(timer);w.terminate();resolve(r)}w.onmessage=e=>finish(e.data);w.onerror=()=>finish({ok:false,error:'파이썬 실행 환경을 불러오지 못했습니다. 인터넷 연결을 확인하세요.'});w.postMessage({code,inputs})})}
 function getPrompts(code){let out=[];let re=/\binput\s*\(\s*(['"])((?:\\.|(?!\1)[^\\])*)\1\s*\)/g;let m;while((m=re.exec(code))!==null)out.push(m[2]);return out}
@@ -94,15 +73,7 @@ function setBusy(value) {
     .forEach(button => { button.disabled = value; });
 }
 
-function notifyRpg(type, index, code, theme) {
-  if (classroomMode && window.parent !== window) {
-    const key = type + ':' + index + ':' + (theme ?? '');
-    const previous = requests.get(key);
-    const request = previous?.code === code ? previous.request : crypto.randomUUID();
-    requests.set(key, {code, request});
-    window.parent.postMessage({source:'hoyeon-lesson01', type, index, code, theme, request}, location.origin);
-    return request;
-  }
+function notifyRpg(type, index) {
   if (window.parent !== window) {
     window.parent.postMessage({source:'hoyeon-lesson01', type, index}, window.location.origin);
   }
@@ -126,10 +97,10 @@ async function runArea(area) {
     }
     if (area === 'learn' && result.ok) {
       const sample = lessons[example].code;
-      if (code.trim() === sample.trim()) notifyRpg('example', example, code);
+      if (code.trim() === sample.trim()) notifyRpg('example', example);
       else if (inputs.length === countInputs(sample)) {
         const expected = await execute(sample, inputs);
-        if (expected.ok && normalize(result.output) === normalize(expected.output)) notifyRpg('example', example, code);
+        if (expected.ok && normalize(result.output) === normalize(expected.output)) notifyRpg('example', example);
       }
     }
     if (area === 'practice' && result.ok) {
@@ -142,8 +113,8 @@ async function runArea(area) {
         }
       }
       if (valid) {
-        if (!classroomMode) lessonStorage.setItem('hoyeon_l1_p'+practice, '1');
-        notifyRpg('practice', practice, code);
+        localStorage.setItem('hoyeon_l1_p'+practice, '1');
+        notifyRpg('practice', practice);
         renderPracticeTabsOnly();
       }
       if (current()) setFeedback('practice', valid ? '연습 통과! 다음 문제로 넘어가 보세요.'
@@ -155,7 +126,7 @@ async function runArea(area) {
     setBusy(false);
   }
 }
-function renderPracticeTabsOnly(){document.querySelectorAll('#practiceTabs button').forEach((b,i)=>b.textContent=(i+1)+'번'+(lessonStorage.getItem('hoyeon_l1_p'+i)==='1'?' ✓':''))}
+function renderPracticeTabsOnly(){document.querySelectorAll('#practiceTabs button').forEach((b,i)=>b.textContent=(i+1)+'번'+(localStorage.getItem('hoyeon_l1_p'+i)==='1'?' ✓':''))}
 let verifiedMission;
 async function checkMission() {
   if (busy) return;
@@ -199,15 +170,9 @@ async function checkMission() {
 function submitMission() {
   if (!passed || busy || verifiedMission?.theme !== mi || verifiedMission.difficulty !== diff ||
       verifiedMission.code !== $('missionCode').value) return;
-  if (classroomMode) {
-    verifiedMission.request = notifyRpg('mission', diff + 1, verifiedMission.code, mi);
-    $('submit').disabled = true;
-    $('submitStatus').textContent = '서버에 저장하는 중입니다.';
-    return;
-  }
   const name = missionThemes[mi].title + ' · ' + levels[diff].label;
-  lessonStorage.setItem('hoyeon_l1_submitted', name);
-  lessonStorage.setItem('hoyeon_l1_final_code', verifiedMission.code);
+  localStorage.setItem('hoyeon_l1_submitted', name);
+  localStorage.setItem('hoyeon_l1_final_code', verifiedMission.code);
   notifyRpg('mission', diff + 1);
   passed = false;
   $('submit').disabled = true;
