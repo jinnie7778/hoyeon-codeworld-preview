@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>호연 코드월드 · 수업 로그인</title>
+    <script type="module" crossorigin src="/hoyeon-codeworld-preview/assets/classroom-CNuaznr8.js"></script>
+    <link rel="modulepreload" crossorigin href="/hoyeon-codeworld-preview/assets/balance-9Cijtkbz.js">
+    <link rel="stylesheet" crossorigin href="/hoyeon-codeworld-preview/assets/classroom-DAYKg3hq.css">
+  </head>
+  <body>
+    <main>
+      <h1>호연 코드월드 수업 로그인</h1>
+      <form id="student-login">
+        <label>학급 <select name="classId" required></select></label>
+        <label>이름 <input name="realName" maxlength="80" required /></label>
+        <label>개인 접속 코드 <input name="code" type="password" autocomplete="off" maxlength="65" required /></label>
+        <button type="submit">로그인</button>
+      </form>
+      <p id="status" role="status"></p>
+      <section id="student-record" hidden aria-labelledby="record-title">
+        <h2 id="record-title">내 학습 기록</h2>
+        <p id="profile"></p>
+        <ul id="lessons"></ul>
+        <button id="enter-game" type="button">호연 코드월드 입장</button>
+        <h3>Python 최종 임무 제출</h3>
+        <form id="python-submission">
+          <fieldset>
+            <label>차시 <select name="lesson"></select></label>
+            <p id="challenge-instruction"></p>
+            <p id="challenge-example"></p>
+            <label id="theme-choice">임무 <select name="theme"><option value="0">모험가 등록소</option><option value="1">마을 안내소</option><option value="2">마법 편지</option></select></label>
+            <label>난이도 <select name="tier"><option value="1">새싹</option><option value="2">숙련</option><option value="3">전설</option></select></label>
+            <label>Python 코드 <textarea name="source" rows="9" maxlength="16384" spellcheck="false" required></textarea></label>
+          </fieldset>
+          <button>제출</button>
+        </form>
+        <p id="submission-status" role="status"></p>
+        <h3>최근 제출 결과</h3>
+        <p id="records-status" role="status"></p>
+        <ul id="submission-results"></ul>
+        <button id="sign-out" type="button">로그아웃</button>
+      </section>
+    </main>
+    <iframe id="classroom-game" title="호연 코드월드 수업 게임" hidden></iframe>
+  </body>
+</html>
